@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote System — Complete Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2rem; max-width: 1300px; margin: 0 auto; }
+  h1 { color: #58a6ff; font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .page-sub { color: #8b949e; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  .stag { display: inline-block; color: white; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; font-weight: 600; letter-spacing: 0.03em; }
+  .stag-m { background: #f59e0b; color: #000; }
+  .stag-b { background: #7c3aed; }
+  .stag-s { background: #059669; }
+  .stag-t { background: #2563eb; }
+  h2 { color: #e6edf3; font-size: 1.15rem; margin-bottom: 0.5rem; margin-top: 2.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; }
+  .vd { color: #8b949e; font-size: 0.85rem; margin-bottom: 1rem; }
+  .dv { border: 0; border-top: 2px solid #21262d; margin: 3rem 0; }
+
+  /* Nav */
+  .pn { position: sticky; top: 0; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.6rem 1rem; margin-bottom: 2rem; z-index: 10; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .pn a { color: #58a6ff; text-decoration: none; font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px; white-space: nowrap; }
+  .pn a:hover { background: #21262d; }
+  .pn-l { color: #8b949e; font-size: 0.68rem; margin-right: 0.15rem; }
+  .pn-d { color: #30363d; margin: 0 0.1rem; }
+
+  /* === SHOPIFY ADMIN FRAME === */
+  .sa { background: #f6f6f7; border-radius: 12px; overflow: hidden; margin-top: 1rem; color: #1a1a1a; border: 1px solid #30363d; }
+  .sa-top { background: #1a1a1a; color: white; padding: 0.55rem 1rem; display: flex; align-items: center; gap: 1rem; font-size: 0.82rem; }
+  .sa-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+  .sa-search { flex: 1; max-width: 350px; }
+  .sa-search input { width: 100%; padding: 0.32rem 0.7rem; border-radius: 8px; border: 1px solid #444; background: #303030; color: white; font-size: 0.78rem; }
+  .sa-right { margin-left: auto; color: #aaa; font-size: 0.78rem; display: flex; gap: 0.75rem; align-items: center; }
+  .sa-lay { display: flex; min-height: 550px; }
+
+  /* Sidebar */
+  .sb { width: 215px; background: #f6f6f7; border-right: 1px solid #e1e3e5; padding: 0.6rem 0; flex-shrink: 0; }
+  .sb-t { font-size: 0.65rem; font-weight: 600; color: #8c9196; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.4rem 0.85rem 0.2rem; }
+  .sb-i { display: flex; align-items: center; gap: 0.45rem; padding: 0.35rem 0.85rem; font-size: 0.78rem; color: #616161; cursor: pointer; }
+  .sb-i:hover { background: #edeeef; color: #1a1a1a; }
+  .sb-i.act { background: #e3e5e7; color: #1a1a1a; font-weight: 500; }
+  .sb-i.acp { background: #edeeef; color: #1a1a1a; font-weight: 500; }
+  .sb-ic { width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; color: white; }
+  .sb-sub .sb-i { padding-left: 2.5rem; font-size: 0.76rem; }
+  .sb-bd { font-size: 0.55rem; background: #fff3cd; color: #856404; padding: 0.08rem 0.3rem; border-radius: 3px; margin-left: auto; }
+  .sb-dv { height: 1px; background: #e1e3e5; margin: 0.4rem 0.85rem; }
+
+  /* Main content */
+  .sm { flex: 1; background: #f6f6f7; padding: 1.25rem; overflow: auto; }
+
+  /* === POLARIS === */
+  .pp { background: #f6f6f7; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; color: #1a1a1a; }
+  .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.15rem; flex-wrap: wrap; gap: 0.5rem; }
+  .ph h3 { color: #1a1a1a; margin: 0; font-size: 1.15rem; }
+  .pb { font-size: 0.78rem; color: #616161; margin-bottom: 0.4rem; }
+  .pc { background: white; border-radius: 12px; border: 1px solid #e1e3e5; padding: 1.15rem; margin-bottom: 0.85rem; box-shadow: 0 1px 0 rgba(0,0,0,0.04); }
+  .pct { font-weight: 600; font-size: 0.92rem; color: #1a1a1a; margin-bottom: 0.65rem; }
+  .pcd { font-size: 0.78rem; color: #616161; margin-bottom: 0.85rem; }
+  .pfr { display: flex; gap: 0.85rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+  .pf { flex: 1; min-width: 165px; }
+  .pl { display: block; font-size: 0.78rem; font-weight: 500; color: #1a1a1a; margin-bottom: 0.2rem; }
+  .pht { font-size: 0.72rem; color: #616161; margin-top: 0.15rem; }
+  .pi { width: 100%; padding: 0.45rem 0.7rem; border: 1px solid #c9cccf; border-radius: 8px; font-size: 0.82rem; background: white; color: #1a1a1a; }
+  .ps { width: 100%; padding: 0.45rem 0.7rem; border: 1px solid #c9cccf; border-radius: 8px; font-size: 0.82rem; background: white; color: #1a1a1a; appearance: auto; }
+  .btn { padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .btn-p { background: #008060; color: white; }
+  .btn-s { background: white; color: #1a1a1a; border: 1px solid #c9cccf; }
+  .bdg { display: inline-block; padding: 0.12rem 0.45rem; border-radius: 10px; font-size: 0.68rem; font-weight: 600; }
+  .bdg-a { background: #aee9d1; color: #0d5e3e; }
+  .bdg-o { background: #d3e5ef; color: #1a5276; }
+  .bdg-e { background: #fde8e8; color: #6b1616; }
+  .ptr { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; }
+  .ptl { font-size: 0.82rem; color: #1a1a1a; }
+  .ptg { width: 38px; height: 21px; background: #008060; border-radius: 11px; position: relative; cursor: pointer; flex-shrink: 0; }
+  .ptg::after { content: ''; position: absolute; top: 2.5px; left: 19px; width: 16px; height: 16px; background: white; border-radius: 50%; }
+  .ptg.off { background: #c9cccf; }
+  .ptg.off::after { left: 2.5px; }
+  .pbn { padding: 0.65rem 0.85rem; border-radius: 8px; margin-bottom: 0.85rem; font-size: 0.78rem; }
+  .pbn-i { background: #eaf4fe; border: 1px solid #a7d8f0; color: #1a5276; }
+  .csw { display: inline-block; width: 22px; height: 22px; border-radius: 6px; border: 1px solid #c9cccf; vertical-align: middle; margin-right: 0.4rem; }
+  .sdv { font-weight: 500; font-size: 0.78rem; color: #616161; margin-top: 0.65rem; margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .pt { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .pt th { text-align: left; padding: 0.45rem 0.65rem; border-bottom: 1px solid #e1e3e5; font-weight: 500; color: #616161; font-size: 0.75rem; }
+  .pt td { padding: 0.5rem 0.65rem; border-bottom: 1px solid #f1f2f3; color: #1a1a1a; }
+  .pt tr:hover { background: #f6f6f7; }
+
+  .fb { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .fp { padding: 0.28rem 0.55rem; border: 1px solid #c9cccf; border-radius: 20px; font-size: 0.72rem; background: white; color: #1a1a1a; cursor: pointer; }
+  .fp.fpa { background: #f1f8f5; border-color: #008060; color: #008060; }
+  .sr { display: flex; gap: 0.65rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+  .sc { flex: 1; min-width: 90px; background: white; border: 1px solid #e1e3e5; border-radius: 12px; padding: 0.65rem; text-align: center; }
+  .sv { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; }
+  .sl { font-size: 0.68rem; color: #616161; margin-top: 0.08rem; }
+  .pg { display: flex; justify-content: center; gap: 0.4rem; margin-top: 0.65rem; padding-top: 0.65rem; }
+  .pgb { padding: 0.25rem 0.45rem; border: 1px solid #c9cccf; border-radius: 6px; font-size: 0.72rem; background: white; color: #1a1a1a; cursor: pointer; }
+  .pgb.pga { background: #f1f8f5; border-color: #008060; color: #008060; }
+  .pgb.pgd { color: #c9cccf; }
+
+  /* Modal */
+  .mo { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 2rem; display: flex; align-items: center; justify-content: center; margin-top: 1rem; }
+  .md { background: white; border-radius: 16px; padding: 1.4rem; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .mdt { font-size: 1rem; font-weight: 600; color: #1a1a1a; margin-bottom: 0.2rem; }
+  .mdd { font-size: 0.78rem; color: #616161; margin-bottom: 0.85rem; }
+  .mda { display: flex; justify-content: flex-end; gap: 0.4rem; margin-top: 1.1rem; padding-top: 0.85rem; border-top: 1px solid #e1e3e5; }
+  .cr { display: flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0; }
+  .cb { width: 17px; height: 17px; border: 2px solid #008060; border-radius: 4px; background: #008060; position: relative; flex-shrink: 0; }
+  .cb::after { content: ''; position: absolute; top: 1.5px; left: 4.5px; width: 5px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .cb.uc { background: white; border-color: #c9cccf; }
+  .cb.uc::after { display: none; }
+  .cl { font-size: 0.82rem; color: #1a1a1a; }
+
+  /* === STOREFRONT === */
+  .sf { background: #fff; border-radius: 12px; padding: 0; margin-top: 1rem; color: #1a1a1a; overflow: hidden; border: 1px solid #30363d; }
+  .sfn { background: #1a1a1a; color: white; padding: 0.65rem 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+  .sfnl { display: flex; gap: 1.15rem; font-size: 0.78rem; }
+  .sfnl span { opacity: 0.7; cursor: pointer; }
+  .sfnl span.al { opacity: 1; border-bottom: 2px solid white; padding-bottom: 2px; }
+  .sfb { padding: 1.5rem 2rem; }
+  .sfan { display: flex; gap: 1.4rem; border-bottom: 1px solid #e1e3e5; padding-bottom: 0.65rem; margin-bottom: 1.1rem; font-size: 0.82rem; color: #616161; }
+  .sfan span { cursor: pointer; }
+  .sfan span.al { color: #1a1a1a; font-weight: 500; border-bottom: 2px solid #1a1a1a; padding-bottom: calc(0.65rem - 1px); }
+
+  /* === THEME EDITOR (REALISTIC) === */
+  .te { background: #f1f1f1; border-radius: 12px; overflow: hidden; margin-top: 1rem; border: 1px solid #30363d; }
+  .te-bar { background: #ffffff; padding: 0 1rem; display: flex; align-items: center; height: 52px; border-bottom: 1px solid #e1e3e5; gap: 0.5rem; }
+  .te-bar-back { width: 36px; height: 36px; border-radius: 8px; background: none; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #616161; font-size: 1rem; flex-shrink: 0; }
+  .te-bar-back:hover { background: #f6f6f7; }
+  .te-bar-sep { width: 1px; height: 28px; background: #e1e3e5; margin: 0 0.25rem; }
+  .te-bar-nav { display: flex; gap: 0; }
+  .te-bar-tab { padding: 0.4rem 0.75rem; font-size: 0.78rem; color: #616161; cursor: pointer; border-radius: 6px; font-weight: 500; }
+  .te-bar-tab:hover { background: #f6f6f7; }
+  .te-bar-tab.act { background: #e3e5e7; color: #1a1a1a; }
+  .te-bar-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+  .te-bar-theme { font-size: 0.82rem; font-weight: 600; color: #1a1a1a; }
+  .te-bar-live { font-size: 0.6rem; background: #aee9d1; color: #0d5e3e; padding: 0.12rem 0.4rem; border-radius: 4px; font-weight: 600; }
+  .te-bar-page { font-size: 0.78rem; color: #616161; background: #f6f6f7; border: 1px solid #e1e3e5; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; }
+  .te-bar-right { display: flex; align-items: center; gap: 0.35rem; margin-left: auto; }
+  .te-bar-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #616161; font-size: 0.85rem; border: 1px solid transparent; }
+  .te-bar-icon:hover { background: #f6f6f7; border-color: #e1e3e5; }
+  .te-bar-icon.act { background: #e3e5e7; }
+  .te-bar-save { padding: 0.4rem 0.85rem; background: #e3e5e7; color: #8c9196; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 500; cursor: default; }
+  .te-bar-save.unsaved { background: #008060; color: white; cursor: pointer; }
+  .te-lay { display: flex; min-height: 520px; }
+
+  /* TE Left Panel */
+  .te-lp { width: 300px; background: #ffffff; border-right: 1px solid #e1e3e5; overflow-y: auto; flex-shrink: 0; }
+  .te-lp-head { padding: 0.85rem 1rem 0.5rem; font-size: 0.72rem; font-weight: 600; color: #8c9196; text-transform: uppercase; letter-spacing: 0.04em; }
+  .te-sec { border-bottom: 1px solid #f1f2f3; }
+  .te-sec-head { display: flex; align-items: center; padding: 0.55rem 1rem; cursor: pointer; gap: 0.4rem; }
+  .te-sec-head:hover { background: #f6f6f7; }
+  .te-sec-arrow { font-size: 0.6rem; color: #8c9196; width: 16px; text-align: center; transition: transform 0.15s; }
+  .te-sec-arrow.open { transform: rotate(90deg); }
+  .te-sec-icon { width: 20px; height: 20px; background: #e1e3e5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #616161; flex-shrink: 0; }
+  .te-sec-name { font-size: 0.82rem; color: #1a1a1a; font-weight: 400; flex: 1; }
+  .te-sec-vis { font-size: 0.75rem; color: #c9cccf; cursor: pointer; }
+  .te-sec-vis:hover { color: #616161; }
+  .te-blk { display: flex; align-items: center; padding: 0.45rem 1rem 0.45rem 2.5rem; cursor: pointer; gap: 0.4rem; }
+  .te-blk:hover { background: #f6f6f7; }
+  .te-blk.sel { background: #f1f8f5; border-left: 3px solid #008060; padding-left: calc(2.5rem - 3px); }
+  .te-blk-drag { font-size: 0.7rem; color: #c9cccf; cursor: grab; margin-right: 0.15rem; }
+  .te-blk-name { font-size: 0.8rem; color: #1a1a1a; flex: 1; }
+  .te-blk-app { font-size: 0.58rem; background: #005bd3; color: white; padding: 0.08rem 0.32rem; border-radius: 3px; font-weight: 600; margin-left: 0.25rem; }
+  .te-blk-vis { font-size: 0.7rem; color: #c9cccf; cursor: pointer; }
+  .te-add { padding: 0.55rem 1rem 0.55rem 2.5rem; font-size: 0.78rem; color: #005bd3; cursor: pointer; }
+  .te-add:hover { text-decoration: underline; }
+
+  /* TE Settings panel (inside left panel, below tree) */
+  .te-settings { border-top: 1px solid #e1e3e5; padding: 1rem; }
+  .te-settings-title { font-size: 0.82rem; font-weight: 600; color: #1a1a1a; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem; }
+  .te-settings-title .te-blk-app { vertical-align: middle; }
+  .te-s-field { margin-bottom: 0.65rem; }
+  .te-s-label { font-size: 0.75rem; font-weight: 500; color: #1a1a1a; margin-bottom: 0.2rem; }
+  .te-s-input { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #c9cccf; border-radius: 6px; font-size: 0.8rem; background: white; color: #1a1a1a; }
+  .te-s-select { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #c9cccf; border-radius: 6px; font-size: 0.8rem; background: white; appearance: auto; }
+  .te-s-hint { font-size: 0.7rem; color: #8c9196; margin-top: 0.15rem; }
+
+  /* TE Preview */
+  .te-pv { flex: 1; background: #f1f1f1; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem; overflow: auto; }
+  .te-pv-frame { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04); width: 100%; max-width: 780px; overflow: hidden; }
+  .te-pv-nav { background: #1a1a1a; color: white; padding: 0.6rem 1.25rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+  .te-pv-body { padding: 1.5rem; }
+
+  /* App block highlight in preview */
+  .app-hl { border: 2px solid #005bd3; border-radius: 6px; padding: 2px; position: relative; margin-top: 0.35rem; }
+  .app-hl-label { position: absolute; top: -9px; left: 8px; background: #005bd3; color: white; font-size: 0.58rem; padding: 0.06rem 0.35rem; border-radius: 3px; font-weight: 600; letter-spacing: 0.02em; }
+
+  /* Theme examples */
+  .tex { background: #161b22; border: 1px solid #30363d; border-radius: 10px; overflow: hidden; }
+  .tex-l { background: #21262d; padding: 0.4rem 0.85rem; font-size: 0.75rem; color: #8b949e; font-weight: 500; border-bottom: 1px solid #30363d; }
+  .tex-p { background: white; padding: 1.25rem; color: #1a1a1a; }
+  .split { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .split > div { flex: 1; min-width: 280px; }
+
+  /* Generic preview button */
+  .pvb { display: block; width: 100%; padding: 0.65rem; border-radius: 0; font-size: 0.85rem; font-weight: 500; text-align: center; cursor: pointer; border: none; margin-bottom: 0.35rem; }
+</style>
+</head>
+<body>
+
+<h1>Quote System — Complete Design (All Screens)</h1>
+<p class="page-sub">9 screens: 3 merchant admin + 2 theme editor + 3 buyer storefront + 1 shared popup</p>
+
+<div class="pn">
+  <span class="pn-l">Merchant:</span>
+  <a href="#s1">Quote List</a><a href="#s2">Create</a><a href="#s3">Settings</a>
+  <span class="pn-d">|</span>
+  <span class="pn-l">Theme Editor:</span>
+  <a href="#s4">Cart Block</a><a href="#s5">PDP Block</a><a href="#s6">Theme Examples</a>
+  <span class="pn-d">|</span>
+  <span class="pn-l">Buyer:</span>
+  <a href="#s7">PDP</a><a href="#s8">Cart</a><a href="#s9">My Quotes</a>
+  <span class="pn-d">|</span>
+  <a href="#s10">PDF Popup</a>
+</div>
+
+<!-- ================================================================ -->
+<!-- S1: MERCHANT QUOTE LIST -->
+<!-- ================================================================ -->
+<div id="s1"></div>
+<span class="stag stag-m">MERCHANT — SCREEN 1</span>
+<h2>Quote List</h2>
+<p class="vd">All quotes from all clients. Click quote name → Shopify draft order page.</p>
+
+<div class="sa">
+  <div class="sa-top">
+    <div class="sa-logo"><span style="font-size:1rem;">&#9830;</span> Acme Wholesale</div>
+    <div class="sa-search"><input placeholder="Search..." /></div>
+    <div class="sa-right"><span>&#128276;</span><span style="background:#444;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;">JD</span></div>
+  </div>
+  <div class="sa-lay">
+    <div class="sb">
+      <div class="sb-t">Shopify</div>
+      <div class="sb-i"><div class="sb-ic" style="background:#555;">H</div>Home</div>
+      <div class="sb-i"><div class="sb-ic" style="background:#555;">O</div>Orders</div>
+      <div class="sb-i"><div class="sb-ic" style="background:#555;">P</div>Products</div>
+      <div class="sb-dv"></div>
+      <div class="sb-t">B2B Supercharge</div>
+      <div class="sb-i"><div class="sb-ic" style="background:#008060;">D</div>Dashboard</div>
+      <div class="sb-i acp"><div class="sb-ic" style="background:#005bd3;">Q</div>Quote System</div>
+      <div class="sb-sub">
+        <div class="sb-i act">&#8226; All Quotes</div>
+        <div class="sb-i">&#8226; Create Quote</div>
+        <div class="sb-i">&#8226; Settings</div>
+      </div>
+      <div class="sb-i"><div class="sb-ic" style="background:#7c3aed;">U</div>User Permissions</div>
+      <div class="sb-i" style="color:#8c9196;"><div class="sb-ic" style="background:#ddd;">S</div>Sales Impersonation<span class="sb-bd">Soon</span></div>
+      <div class="sb-i" style="color:#8c9196;"><div class="sb-ic" style="background:#ddd;">W</div>Workflow Builder<span class="sb-bd">Soon</span></div>
+      <div class="sb-i" style="color:#8c9196;"><div class="sb-ic" style="background:#ddd;">Q</div>QuickPad<span class="sb-bd">Soon</span></div>
+      <div class="sb-dv"></div>
+      <div class="sb-i"><div class="sb-ic" style="background:#888;">&#9881;</div>App Settings</div>
+    </div>
+    <div class="sm">
+      <div class="ph"><h3>Quotes</h3><button class="btn btn-p">+ Create quote</button></div>
+      <div class="sr">
+        <div class="sc"><div class="sv">34</div><div class="sl">Active</div></div>
+        <div class="sc"><div class="sv">8</div><div class="sl">Ordered</div></div>
+        <div class="sc"><div class="sv">5</div><div class="sl">Expired</div></div>
+      </div>
+      <div class="pc" style="padding:0.55rem 0.85rem;">
+        <div class="fb">
+          <span style="font-size:0.72rem;color:#616161;">Status:</span>
+          <span class="fp fpa">All</span><span class="fp">Active</span><span class="fp">Ordered</span><span class="fp">Expired</span>
+          <span style="margin-left:auto;"><input class="pi" placeholder="Search..." style="width:170px;padding:0.28rem 0.55rem;font-size:0.78rem;" /></span>
+        </div>
+      </div>
+      <div class="pc" style="padding:0;">
+        <table class="pt">
+          <thead><tr><th>Quote</th><th>Company</th><th>Contact</th><th>Status</th><th>Total</th><th>Created</th><th>Expires</th><th>By</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><a href="#" style="color:#005bd3;text-decoration:none;font-weight:500;">QUO-00147</a></td><td>Acme Industrial</td><td>john@acme.com</td><td><span class="bdg bdg-a">Active</span></td><td>$4,644</td><td>May 12</td><td>Jun 11</td><td>Admin</td><td><button class="btn btn-s" style="font-size:0.68rem;padding:0.18rem 0.35rem;">PDF</button></td></tr>
+            <tr><td><a href="#" style="color:#005bd3;text-decoration:none;font-weight:500;">QUO-00146</a></td><td>BuildRight Corp</td><td>sarah@build.com</td><td><span class="bdg bdg-o">Ordered</span></td><td>$12,380</td><td>May 10</td><td style="color:#8c9196;">—</td><td>Buyer</td><td><button class="btn btn-s" style="font-size:0.68rem;padding:0.18rem 0.35rem;">PDF</button></td></tr>
+            <tr><td><a href="#" style="color:#005bd3;text-decoration:none;font-weight:500;">QUO-00145</a></td><td>Metro Wholesale</td><td>ops@metro.com</td><td><span class="bdg bdg-a">Active</span></td><td>$890</td><td>May 9</td><td>Jun 8</td><td>Admin</td><td><button class="btn btn-s" style="font-size:0.68rem;padding:0.18rem 0.35rem;">PDF</button></td></tr>
+            <tr><td><a href="#" style="color:#005bd3;text-decoration:none;font-weight:500;">QUO-00144</a></td><td>Acme Industrial</td><td>proc@acme.com</td><td><span class="bdg bdg-e">Expired</span></td><td>$2,150</td><td>Apr 15</td><td style="color:#e51c00;">May 15</td><td>Admin</td><td><button class="btn btn-s" style="font-size:0.68rem;padding:0.18rem 0.35rem;">PDF</button></td></tr>
+          </tbody>
+        </table>
+        <div class="pg"><span class="pgb pgd">&laquo;</span><span class="pgb pga">1</span><span class="pgb">2</span><span class="pgb">&raquo;</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S2: MERCHANT CREATE QUOTE -->
+<!-- ================================================================ -->
+<div id="s2"></div>
+<span class="stag stag-m">MERCHANT — SCREEN 2</span>
+<h2>Create Quote</h2>
+<p class="vd">Prices from Shopify contextualPricing. Expiry editable per quote.</p>
+
+<div class="pp">
+  <div class="pb">B2B Supercharge &rsaquo; Quotes &rsaquo; Create</div>
+  <div class="ph"><h3>Create Quote</h3><div style="display:flex;gap:0.4rem;"><button class="btn btn-s">Cancel</button><button class="btn btn-p">Save Quote</button></div></div>
+  <div class="pbn pbn-i">Prices from Shopify B2B contextual pricing for selected company location.</div>
+  <div class="pc">
+    <div class="pct">Customer</div>
+    <div class="pfr">
+      <div class="pf"><label class="pl">Company</label><select class="ps"><option>Acme Industrial Supplies</option></select></div>
+      <div class="pf"><label class="pl">Location</label><select class="ps"><option>Warehouse - Chicago</option></select></div>
+      <div class="pf"><label class="pl">Contact</label><select class="ps"><option>john@acme-industrial.com</option></select></div>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="pct">Quote Details</div>
+    <div class="pfr">
+      <div class="pf"><label class="pl">Quote name</label><input class="pi" value="QUO-00148" /><div class="pht">Auto-generated. Editable.</div></div>
+      <div class="pf"><label class="pl">Expiry date</label><input class="pi" type="date" value="2026-06-13" /><div class="pht">Default: 30 days. Change per quote.</div></div>
+    </div>
+    <div class="pfr"><div class="pf"><label class="pl">Notes (optional)</label><textarea class="pi" rows="2" placeholder="Notes visible to buyer..."></textarea></div></div>
+  </div>
+  <div class="pc">
+    <div class="pct">Products</div>
+    <div style="margin-bottom:0.65rem;"><button class="btn btn-s">+ Add products</button></div>
+    <table class="pt">
+      <thead><tr><th style="width:28%;">Product</th><th>SKU</th><th>MSRP</th><th>Your Price</th><th>Qty</th><th>Line Total</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><div style="display:flex;align-items:center;gap:0.4rem;"><div style="width:30px;height:30px;background:#e1e3e5;border-radius:4px;"></div><div><div style="font-weight:500;font-size:0.8rem;">Heavy Duty Bolt Set</div><div style="font-size:0.68rem;color:#616161;">M12 x 40mm / Zinc</div></div></div></td><td style="color:#616161;">HDB-M12-40Z</td><td style="color:#8c9196;text-decoration:line-through;">$24.99</td><td style="font-weight:600;">$18.50</td><td><input class="pi" type="number" value="100" style="width:60px;" /></td><td style="font-weight:600;">$1,850.00</td><td style="color:#8c9196;cursor:pointer;">&#x2715;</td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:0.4rem;"><div style="width:30px;height:30px;background:#e1e3e5;border-radius:4px;"></div><div><div style="font-weight:500;font-size:0.8rem;">Industrial Washer Pack</div><div style="font-size:0.68rem;color:#616161;">M12 Flat / Stainless</div></div></div></td><td style="color:#616161;">IWP-M12-SS</td><td style="color:#8c9196;text-decoration:line-through;">$8.99</td><td style="font-weight:600;">$5.75</td><td><input class="pi" type="number" value="200" style="width:60px;" /></td><td style="font-weight:600;">$1,150.00</td><td style="color:#8c9196;cursor:pointer;">&#x2715;</td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:0.4rem;"><div style="width:30px;height:30px;background:#e1e3e5;border-radius:4px;"></div><div><div style="font-weight:500;font-size:0.8rem;">Hex Nut Assortment</div><div style="font-size:0.68rem;color:#616161;">M8-M16 / Grade 8</div></div></div></td><td style="color:#616161;">HNA-G8-MIX</td><td style="color:#8c9196;text-decoration:line-through;">$34.99</td><td style="font-weight:600;">$26.00</td><td><input class="pi" type="number" value="50" style="width:60px;" /></td><td style="font-weight:600;">$1,300.00</td><td style="color:#8c9196;cursor:pointer;">&#x2715;</td></tr>
+      </tbody>
+    </table>
+    <div style="text-align:right;margin-top:0.85rem;padding-top:0.65rem;border-top:1px solid #e1e3e5;">
+      <div style="font-size:0.82rem;color:#616161;">Subtotal: <strong style="color:#1a1a1a;">$4,300.00</strong></div>
+      <div style="font-size:0.82rem;color:#616161;margin-top:0.15rem;">Tax: <strong style="color:#1a1a1a;">$344.00</strong></div>
+      <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;">Total: $4,644.00</div>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S3: MERCHANT SETTINGS -->
+<!-- ================================================================ -->
+<div id="s3"></div>
+<span class="stag stag-m">MERCHANT — SCREEN 3</span>
+<h2>Quote Settings</h2>
+
+<div class="pp">
+  <div class="pb">B2B Supercharge &rsaquo; Quotes &rsaquo; Settings</div>
+  <div class="ph"><h3>Quote Settings</h3><button class="btn btn-p">Save</button></div>
+  <div class="pc"><div class="pct">General</div><div class="pfr"><div class="pf"><label class="pl">Default expiry (days)</label><input class="pi" type="number" value="30" /><div class="pht">Editable per quote at creation.</div></div><div class="pf"><label class="pl">Quote reference prefix</label><input class="pi" value="QUO-" /></div><div class="pf"><label class="pl">Next quote number</label><input class="pi" type="number" value="148" /></div></div></div>
+  <div class="pc"><div class="pct">PDF Default Columns</div><div class="pcd">Pre-selected when PDF is downloaded. Toggleable per download.</div>
+    <div class="sdv">Pricing</div>
+    <div class="ptr"><span class="ptl">Show MSRP (Compare At Price)</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show Your Price</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show quantity</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show line totals</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show savings (MSRP vs Your Price)</span><div class="ptg off"></div></div>
+    <div class="sdv" style="margin-top:0.85rem;">Summary</div>
+    <div class="ptr"><span class="ptl">Show subtotal</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show tax</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show grand total</span><div class="ptg"></div></div>
+    <div class="sdv" style="margin-top:0.85rem;">Additional</div>
+    <div class="ptr"><span class="ptl">Include notes</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Include expiry date</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Include SKU column</span><div class="ptg off"></div></div>
+  </div>
+  <div class="pc"><div class="pct">PDF Branding</div>
+    <div class="pfr"><div class="pf" style="flex:0 0 auto;"><label class="pl">Company logo</label><div style="width:110px;height:55px;border:2px dashed #c9cccf;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#8c9196;font-size:0.72rem;cursor:pointer;">Upload logo</div></div><div class="pf"><label class="pl">Company name</label><input class="pi" placeholder="Acme Wholesale Co." /></div></div>
+    <div class="pfr"><div class="pf" style="max-width:190px;"><label class="pl">Primary color</label><div style="display:flex;align-items:center;gap:0.4rem;"><div class="csw" style="background:#2563eb;"></div><input class="pi" value="#2563eb" style="width:95px;" /></div></div><div class="pf"><label class="pl">Footer text</label><input class="pi" placeholder="Net 30. All prices in USD." /></div></div>
+  </div>
+  <div class="pc"><div class="pct">Storefront Quote Buttons</div><div class="pcd">Where "Save as Quote" appears for buyers.</div>
+    <div class="ptr"><span class="ptl">Show on cart page</span><div class="ptg"></div></div>
+    <div class="ptr"><span class="ptl">Show on product page (PDP)</span><div class="ptg"></div></div>
+  </div>
+  <div class="pc"><div class="pct">Buyer Permissions</div>
+    <div class="ptr"><span class="ptl">Allow buyers to download PDF</span><div class="ptg"></div></div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S4: THEME EDITOR — CART PAGE -->
+<!-- ================================================================ -->
+<div id="s4"></div>
+<span class="stag stag-t">THEME EDITOR — SCREEN 4</span>
+<h2>Cart Page — App Block Placement</h2>
+<p class="vd">Merchant adds "Save as Quote" block via Shopify Theme Editor. One-time setup.</p>
+
+<div class="te">
+  <div class="te-bar">
+    <div class="te-bar-back">&#8592;</div>
+    <div class="te-bar-sep"></div>
+    <div class="te-bar-nav">
+      <div class="te-bar-tab act">Sections</div>
+      <div class="te-bar-tab">Theme settings</div>
+    </div>
+    <div class="te-bar-center">
+      <span class="te-bar-theme">Dawn</span>
+      <span class="te-bar-live">Live</span>
+      <span class="te-bar-page">Cart page &#9662;</span>
+    </div>
+    <div class="te-bar-right">
+      <div class="te-bar-icon" title="Undo">&#8634;</div>
+      <div class="te-bar-icon" title="Redo">&#8635;</div>
+      <div class="te-bar-sep"></div>
+      <div class="te-bar-icon act" title="Desktop">&#9633;</div>
+      <div class="te-bar-icon" title="Mobile">&#9783;</div>
+      <div class="te-bar-sep"></div>
+      <button class="te-bar-save unsaved">Save</button>
+    </div>
+  </div>
+  <div class="te-lay">
+    <div class="te-lp">
+      <div class="te-lp-head">Template: Cart</div>
+
+      <div class="te-sec">
+        <div class="te-sec-head">
+          <span class="te-sec-arrow open">&#9654;</span>
+          <div class="te-sec-icon">A</div>
+          <span class="te-sec-name">Announcement bar</span>
+          <span class="te-sec-vis">&#128065;</span>
+        </div>
+      </div>
+
+      <div class="te-sec">
+        <div class="te-sec-head">
+          <span class="te-sec-arrow open">&#9654;</span>
+          <div class="te-sec-icon">H</div>
+          <span class="te-sec-name">Header</span>
+          <span class="te-sec-vis">&#128065;</span>
+        </div>
+      </div>
+
+      <div class="te-sec">
+        <div class="te-sec-head">
+          <span class="te-sec-arrow open" style="transform:rotate(90deg);">&#9654;</span>
+          <div class="te-sec-icon">C</div>
+          <span class="te-sec-name" style="font-weight:500;">Cart items</span>
+          <span class="te-sec-vis">&#128065;</span>
+        </div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Subtotal</span><span class="te-blk-vis">&#128065;</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Checkout buttons</span><span class="te-blk-vis">&#128065;</span></div>
+
+        <!-- APP BLOCK — selected -->
+        <div class="te-blk sel">
+          <span class="te-blk-drag">&#8942;&#8942;</span>
+          <span class="te-blk-name">Save as Quote<span class="te-blk-app">APP</span></span>
+          <span class="te-blk-vis">&#128065;</span>
+        </div>
+
+        <div class="te-add">+ Add block</div>
+      </div>
+
+      <div class="te-sec">
+        <div class="te-sec-head">
+          <span class="te-sec-arrow open">&#9654;</span>
+          <div class="te-sec-icon">F</div>
+          <span class="te-sec-name">Footer</span>
+          <span class="te-sec-vis">&#128065;</span>
+        </div>
+      </div>
+
+      <!-- Block settings -->
+      <div class="te-settings">
+        <div class="te-settings-title">Save as Quote <span class="te-blk-app">APP</span></div>
+        <div style="font-size:0.72rem;color:#8c9196;margin-bottom:0.85rem;">B2B Supercharge &bull; Quote System</div>
+        <div class="te-s-field">
+          <div class="te-s-label">Button text</div>
+          <input class="te-s-input" value="Save as Quote" />
+        </div>
+        <div class="te-s-field">
+          <div class="te-s-label">Button style</div>
+          <select class="te-s-select">
+            <option selected>Secondary (outline)</option>
+            <option>Primary (solid)</option>
+          </select>
+          <div class="te-s-hint">Matches your theme's button styles</div>
+        </div>
+        <div class="te-s-field">
+          <div class="te-s-label">Position</div>
+          <select class="te-s-select">
+            <option selected>Below checkout button</option>
+            <option>Above checkout button</option>
+            <option>Next to checkout (side by side)</option>
+          </select>
+        </div>
+        <div class="te-s-field" style="margin-top:0.85rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="te-s-label" style="margin:0;">Show for B2B customers only</span>
+            <div class="ptg" style="width:36px;height:20px;"></div>
+          </div>
+          <div class="te-s-hint">Hides button for non-B2B logged-in customers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="te-pv">
+      <div class="te-pv-frame">
+        <div class="te-pv-nav">
+          <span style="font-weight:600;">ACME WHOLESALE</span>
+          <div style="display:flex;gap:1rem;font-size:0.78rem;"><span>Shop</span><span>Collections</span><span>Account</span><span style="font-weight:500;">Cart (3)</span></div>
+        </div>
+        <div class="te-pv-body">
+          <h3 style="font-size:1.1rem;margin-bottom:1rem;">Your Cart</h3>
+          <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-bottom:0.75rem;">
+            <thead><tr><th style="text-align:left;padding:0.4rem 0;border-bottom:1px solid #e1e3e5;color:#616161;font-weight:500;">Product</th><th style="text-align:left;padding:0.4rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Price</th><th style="text-align:left;padding:0.4rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Qty</th><th style="text-align:right;padding:0.4rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Total</th></tr></thead>
+            <tbody>
+              <tr><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;font-weight:500;">Heavy Duty Bolt Set</td><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;">$18.50</td><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;">100</td><td style="text-align:right;padding:0.5rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$1,850.00</td></tr>
+              <tr><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;font-weight:500;">Industrial Washer Pack</td><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;">$5.75</td><td style="padding:0.5rem 0;border-bottom:1px solid #f1f2f3;">200</td><td style="text-align:right;padding:0.5rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$1,150.00</td></tr>
+            </tbody>
+          </table>
+          <div style="text-align:right;font-weight:700;margin-bottom:0.85rem;">Subtotal: $3,000.00</div>
+          <button class="pvb" style="background:#1a1a1a;color:white;">Check out</button>
+          <div class="app-hl">
+            <span class="app-hl-label">B2B Supercharge &bull; Save as Quote</span>
+            <button class="pvb" style="background:white;color:#1a1a1a;border:1px solid #1a1a1a;margin:0;">Save as Quote</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S5: THEME EDITOR — PRODUCT PAGE -->
+<!-- ================================================================ -->
+<div id="s5"></div>
+<span class="stag stag-t">THEME EDITOR — SCREEN 5</span>
+<h2>Product Page — App Block Placement</h2>
+
+<div class="te">
+  <div class="te-bar">
+    <div class="te-bar-back">&#8592;</div>
+    <div class="te-bar-sep"></div>
+    <div class="te-bar-nav">
+      <div class="te-bar-tab act">Sections</div>
+      <div class="te-bar-tab">Theme settings</div>
+    </div>
+    <div class="te-bar-center">
+      <span class="te-bar-theme">Dawn</span>
+      <span class="te-bar-live">Live</span>
+      <span class="te-bar-page">Default product &#9662;</span>
+    </div>
+    <div class="te-bar-right">
+      <div class="te-bar-icon">&#8634;</div><div class="te-bar-icon">&#8635;</div>
+      <div class="te-bar-sep"></div>
+      <div class="te-bar-icon act">&#9633;</div><div class="te-bar-icon">&#9783;</div>
+      <div class="te-bar-sep"></div>
+      <button class="te-bar-save unsaved">Save</button>
+    </div>
+  </div>
+  <div class="te-lay">
+    <div class="te-lp">
+      <div class="te-lp-head">Template: Product</div>
+      <div class="te-sec"><div class="te-sec-head"><span class="te-sec-arrow open">&#9654;</span><div class="te-sec-icon">H</div><span class="te-sec-name">Header</span></div></div>
+      <div class="te-sec">
+        <div class="te-sec-head"><span class="te-sec-arrow open" style="transform:rotate(90deg);">&#9654;</span><div class="te-sec-icon">P</div><span class="te-sec-name" style="font-weight:500;">Product information</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Title</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Price</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Variant picker</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Quantity selector</span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Buy buttons</span></div>
+        <div class="te-blk sel"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Save as Quote<span class="te-blk-app">APP</span></span></div>
+        <div class="te-blk"><span class="te-blk-drag">&#8942;&#8942;</span><span class="te-blk-name">Description</span></div>
+        <div class="te-add">+ Add block</div>
+      </div>
+      <div class="te-sec"><div class="te-sec-head"><span class="te-sec-arrow open">&#9654;</span><div class="te-sec-icon">F</div><span class="te-sec-name">Footer</span></div></div>
+
+      <div class="te-settings">
+        <div class="te-settings-title">Save as Quote <span class="te-blk-app">APP</span></div>
+        <div style="font-size:0.72rem;color:#8c9196;margin-bottom:0.85rem;">B2B Supercharge &bull; Quote System</div>
+        <div class="te-s-field"><div class="te-s-label">Button text</div><input class="te-s-input" value="Save as Quote" /></div>
+        <div class="te-s-field"><div class="te-s-label">Button style</div><select class="te-s-select"><option selected>Secondary (outline)</option><option>Primary (solid)</option></select></div>
+        <div class="te-s-field" style="margin-top:0.65rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="te-s-label" style="margin:0;">Show for B2B customers only</span><div class="ptg" style="width:36px;height:20px;"></div></div></div>
+      </div>
+    </div>
+    <div class="te-pv">
+      <div class="te-pv-frame">
+        <div class="te-pv-nav"><span style="font-weight:600;">ACME WHOLESALE</span><div style="display:flex;gap:1rem;font-size:0.78rem;"><span>Shop</span><span>Collections</span><span>Account</span></div></div>
+        <div class="te-pv-body">
+          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;min-height:240px;background:#e1e3e5;border-radius:6px;"></div>
+            <div style="flex:1;min-width:250px;">
+              <div style="font-size:1.15rem;font-weight:600;margin-bottom:0.35rem;">Heavy Duty Bolt Set</div>
+              <div style="font-size:0.78rem;color:#8c9196;margin-bottom:0.5rem;">SKU: HDB-M12-40Z</div>
+              <div style="font-size:0.78rem;color:#8c9196;text-decoration:line-through;">MSRP: $24.99</div>
+              <div style="font-size:1.2rem;font-weight:700;margin-bottom:0.85rem;">$18.50</div>
+              <div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.75rem;"><label style="font-size:0.82rem;font-weight:500;">Qty:</label><input style="width:55px;padding:0.3rem;border:1px solid #ccc;border-radius:4px;text-align:center;font-size:0.82rem;" value="100" /></div>
+              <button class="pvb" style="background:#1a1a1a;color:white;">Add to cart</button>
+              <div class="app-hl">
+                <span class="app-hl-label">B2B Supercharge &bull; Save as Quote</span>
+                <button class="pvb" style="background:white;color:#1a1a1a;border:1px solid #1a1a1a;margin:0;">Save as Quote</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S6: THEME EXAMPLES -->
+<!-- ================================================================ -->
+<div id="s6"></div>
+<span class="stag stag-t">THEME EXAMPLES — SCREEN 6</span>
+<h2>Same Block, Different Themes</h2>
+<p class="vd">Button inherits theme CSS variables. Looks native on every store.</p>
+
+<div class="split">
+  <div><div class="tex"><div class="tex-l">Dawn (Shopify default)</div><div class="tex-p"><div style="text-align:right;font-weight:700;margin-bottom:0.6rem;">Subtotal: $3,000.00</div><button style="width:100%;padding:0.65rem;background:#1a1a1a;color:white;border:none;border-radius:0;font-size:0.82rem;font-weight:500;cursor:pointer;margin-bottom:0.35rem;">Check out</button><button style="width:100%;padding:0.65rem;background:white;color:#1a1a1a;border:1px solid #1a1a1a;border-radius:0;font-size:0.82rem;font-weight:500;cursor:pointer;">Save as Quote</button></div></div></div>
+  <div><div class="tex"><div class="tex-l">Craft (rounded, modern)</div><div class="tex-p" style="font-family:Georgia,serif;"><div style="text-align:right;font-weight:700;margin-bottom:0.6rem;">Subtotal: $3,000.00</div><button style="width:100%;padding:0.7rem;background:#2d5016;color:white;border:none;border-radius:30px;font-size:0.82rem;font-weight:500;cursor:pointer;margin-bottom:0.4rem;font-family:Georgia,serif;">Check out</button><button style="width:100%;padding:0.7rem;background:white;color:#2d5016;border:2px solid #2d5016;border-radius:30px;font-size:0.82rem;font-weight:500;cursor:pointer;font-family:Georgia,serif;">Save as Quote</button></div></div></div>
+</div>
+<div class="split" style="margin-top:0.85rem;">
+  <div><div class="tex"><div class="tex-l">Sense (soft, pastel)</div><div class="tex-p" style="background:#faf7f2;"><div style="text-align:right;font-weight:700;margin-bottom:0.6rem;color:#3a3a3a;">Subtotal: $3,000.00</div><button style="width:100%;padding:0.65rem;background:#3a3a3a;color:white;border:none;border-radius:4px;font-size:0.82rem;letter-spacing:0.04em;cursor:pointer;margin-bottom:0.35rem;">CHECKOUT</button><button style="width:100%;padding:0.65rem;background:transparent;color:#3a3a3a;border:1px solid #3a3a3a;border-radius:4px;font-size:0.82rem;letter-spacing:0.04em;cursor:pointer;">SAVE AS QUOTE</button></div></div></div>
+  <div><div class="tex"><div class="tex-l">Custom B2B (industrial)</div><div class="tex-p" style="background:#f0f0f0;"><div style="text-align:right;font-weight:700;margin-bottom:0.6rem;">Subtotal: $3,000.00</div><div style="display:flex;gap:0.4rem;"><button style="flex:1;padding:0.65rem;background:#005bd3;color:white;border:none;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Checkout</button><button style="flex:1;padding:0.65rem;background:white;color:#005bd3;border:2px solid #005bd3;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Save as Quote</button></div></div></div></div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S7: BUYER PDP -->
+<!-- ================================================================ -->
+<div id="s7"></div>
+<span class="stag stag-b">BUYER — SCREEN 7</span>
+<h2>Product Page (PDP)</h2>
+<p class="vd">"Save as Quote" below Add to Cart. Only shown if merchant enables it. Creates single-product quote.</p>
+
+<div class="sf">
+  <div class="sfn"><span style="font-weight:600;">ACME WHOLESALE</span><div class="sfnl"><span class="al">Shop</span><span>Collections</span><span>Account</span><span>Cart (0)</span></div></div>
+  <div class="sfb">
+    <div style="font-size:0.78rem;color:#616161;margin-bottom:0.85rem;">Home &rsaquo; Industrial Fasteners &rsaquo; Heavy Duty Bolt Set</div>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;min-height:280px;background:#e1e3e5;border-radius:8px;"></div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:1.2rem;font-weight:600;margin-bottom:0.35rem;">Heavy Duty Bolt Set</div>
+        <div style="font-size:0.78rem;color:#8c9196;margin-bottom:0.85rem;">SKU: HDB-M12-40Z &bull; M12 x 40mm / Zinc</div>
+        <div style="font-size:0.82rem;color:#8c9196;text-decoration:line-through;">MSRP: $24.99</div>
+        <div style="font-size:1.3rem;font-weight:700;margin-bottom:0.15rem;">$18.50</div>
+        <div style="font-size:0.78rem;color:#008060;font-weight:500;margin-bottom:1rem;">You save $6.49 (26%)</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.85rem;"><label style="font-size:0.82rem;font-weight:500;">Quantity:</label><input style="width:65px;padding:0.4rem;border:1px solid #c9cccf;border-radius:8px;text-align:center;font-size:0.82rem;" value="100" /></div>
+        <button style="width:100%;padding:0.7rem;background:#1a1a1a;color:white;border:none;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;margin-bottom:0.4rem;">Add to Cart</button>
+        <button style="width:100%;padding:0.7rem;background:white;color:#1a1a1a;border:2px solid #1a1a1a;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;">Save as Quote</button>
+        <div style="margin-top:1.15rem;font-size:0.8rem;color:#616161;line-height:1.8;">
+          <div>&#10003; In stock &bull; Ships 1-2 business days</div>
+          <div>&#10003; B2B pricing for Acme Industrial</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S8: BUYER CART -->
+<!-- ================================================================ -->
+<div id="s8"></div>
+<span class="stag stag-b">BUYER — SCREEN 8</span>
+<h2>Cart Page</h2>
+<p class="vd">"Save as Quote" next to Checkout. Creates quote from full cart. Cart cleared, redirect to My Quotes.</p>
+
+<div class="sf">
+  <div class="sfn"><span style="font-weight:600;">ACME WHOLESALE</span><div class="sfnl"><span>Shop</span><span>Collections</span><span>Account</span><span class="al">Cart (3)</span></div></div>
+  <div class="sfb">
+    <h3 style="font-size:1.15rem;margin-bottom:1rem;">Your Cart</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-bottom:0.75rem;">
+      <thead><tr><th style="text-align:left;padding:0.45rem 0;border-bottom:1px solid #e1e3e5;color:#616161;font-weight:500;width:40%;">Product</th><th style="text-align:left;padding:0.45rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">MSRP</th><th style="text-align:left;padding:0.45rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Price</th><th style="text-align:left;padding:0.45rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Qty</th><th style="text-align:right;padding:0.45rem 0;border-bottom:1px solid #e1e3e5;color:#616161;">Total</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;"><div style="display:flex;align-items:center;gap:0.6rem;"><div style="width:50px;height:50px;background:#e1e3e5;border-radius:6px;flex-shrink:0;"></div><div><div style="font-weight:500;">Heavy Duty Bolt Set</div><div style="font-size:0.72rem;color:#616161;">M12 x 40mm / Zinc</div></div></div></td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;color:#8c9196;text-decoration:line-through;">$24.99</td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$18.50</td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;"><input style="width:55px;padding:0.3rem;border:1px solid #c9cccf;border-radius:6px;text-align:center;font-size:0.82rem;" value="100" /></td><td style="text-align:right;padding:0.6rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$1,850.00</td></tr>
+        <tr><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;"><div style="display:flex;align-items:center;gap:0.6rem;"><div style="width:50px;height:50px;background:#e1e3e5;border-radius:6px;flex-shrink:0;"></div><div><div style="font-weight:500;">Industrial Washer Pack</div><div style="font-size:0.72rem;color:#616161;">M12 Flat / Stainless</div></div></div></td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;color:#8c9196;text-decoration:line-through;">$8.99</td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$5.75</td><td style="padding:0.6rem 0;border-bottom:1px solid #f1f2f3;"><input style="width:55px;padding:0.3rem;border:1px solid #c9cccf;border-radius:6px;text-align:center;font-size:0.82rem;" value="200" /></td><td style="text-align:right;padding:0.6rem 0;border-bottom:1px solid #f1f2f3;font-weight:600;">$1,150.00</td></tr>
+        <tr><td style="padding:0.6rem 0;"><div style="display:flex;align-items:center;gap:0.6rem;"><div style="width:50px;height:50px;background:#e1e3e5;border-radius:6px;flex-shrink:0;"></div><div><div style="font-weight:500;">Hex Nut Assortment</div><div style="font-size:0.72rem;color:#616161;">M8-M16 / Grade 8</div></div></div></td><td style="padding:0.6rem 0;color:#8c9196;text-decoration:line-through;">$34.99</td><td style="padding:0.6rem 0;font-weight:600;">$26.00</td><td style="padding:0.6rem 0;"><input style="width:55px;padding:0.3rem;border:1px solid #c9cccf;border-radius:6px;text-align:center;font-size:0.82rem;" value="50" /></td><td style="text-align:right;padding:0.6rem 0;font-weight:600;">$1,300.00</td></tr>
+      </tbody>
+    </table>
+    <div style="text-align:right;padding-top:0.85rem;border-top:2px solid #1a1a1a;">
+      <div style="font-size:0.82rem;color:#616161;">Subtotal: <strong style="color:#1a1a1a;">$4,300.00</strong></div>
+      <div style="font-size:0.82rem;color:#616161;margin-top:0.15rem;">Tax: <strong style="color:#1a1a1a;">$344.00</strong></div>
+      <div style="font-size:1.15rem;font-weight:700;margin-top:0.35rem;">Total: $4,644.00</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:0.6rem;margin-top:0.85rem;">
+      <button style="padding:0.7rem 1.4rem;background:white;color:#1a1a1a;border:2px solid #1a1a1a;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;">Save as Quote</button>
+      <button style="padding:0.7rem 1.4rem;background:#1a1a1a;color:white;border:none;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;">Checkout</button>
+    </div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S9: BUYER MY QUOTES -->
+<!-- ================================================================ -->
+<div id="s9"></div>
+<span class="stag stag-b">BUYER — SCREEN 9</span>
+<h2>My Quotes (App Proxy)</h2>
+<p class="vd">View-only list. Load to Cart or Download PDF. No create button — quotes created from cart/PDP.</p>
+
+<div class="sf">
+  <div class="sfn"><span style="font-weight:600;">ACME WHOLESALE</span><div class="sfnl"><span>Shop</span><span>Collections</span><span class="al">Account</span><span>Cart (0)</span></div></div>
+  <div class="sfb">
+    <div class="sfan"><span>Orders</span><span>Addresses</span><span class="al">My Quotes</span><span>Profile</span></div>
+    <h3 style="font-size:1.05rem;margin-bottom:0.85rem;">My Quotes</h3>
+    <div class="pc" style="padding:0;border-radius:8px;">
+      <table class="pt" style="font-size:0.8rem;">
+        <thead><tr><th>Quote</th><th>Status</th><th>Items</th><th>Total</th><th>Created</th><th>Expires</th><th style="text-align:right;">Actions</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:500;">QUO-00148</td><td><span class="bdg bdg-a">Active</span></td><td>3 items</td><td style="font-weight:600;">$4,644.00</td><td>May 14, 2026</td><td>Jun 13, 2026</td><td style="text-align:right;"><button class="btn btn-s" style="font-size:0.7rem;padding:0.22rem 0.45rem;">PDF</button> <button class="btn btn-p" style="font-size:0.7rem;padding:0.22rem 0.45rem;">Load to Cart</button></td></tr>
+          <tr><td style="font-weight:500;">QUO-00139</td><td><span class="bdg bdg-a">Active</span></td><td>5 items</td><td style="font-weight:600;">$8,220.00</td><td>May 3, 2026</td><td>Jun 2, 2026</td><td style="text-align:right;"><button class="btn btn-s" style="font-size:0.7rem;padding:0.22rem 0.45rem;">PDF</button> <button class="btn btn-p" style="font-size:0.7rem;padding:0.22rem 0.45rem;">Load to Cart</button></td></tr>
+          <tr><td style="font-weight:500;">QUO-00131</td><td><span class="bdg bdg-o">Ordered</span></td><td>2 items</td><td style="font-weight:600;">$1,450.00</td><td>Apr 20, 2026</td><td style="color:#8c9196;">—</td><td style="text-align:right;"><button class="btn btn-s" style="font-size:0.7rem;padding:0.22rem 0.45rem;">PDF</button></td></tr>
+          <tr><td style="font-weight:500;">QUO-00128</td><td><span class="bdg bdg-e">Expired</span></td><td>4 items</td><td style="font-weight:600;">$3,100.00</td><td>Apr 10, 2026</td><td style="color:#e51c00;">May 10, 2026</td><td style="text-align:right;"><button class="btn btn-s" style="font-size:0.7rem;padding:0.22rem 0.45rem;">PDF</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:0.85rem;padding:0.65rem;background:#f6f6f7;border-radius:8px;font-size:0.78rem;color:#616161;"><strong style="color:#1a1a1a;">How it works:</strong> "Load to Cart" puts quote items into your Shopify cart for checkout. Download PDF to share with your team. Expired quotes: PDF only.</div>
+  </div>
+</div>
+
+<hr class="dv">
+
+<!-- ================================================================ -->
+<!-- S10: PDF POPUP -->
+<!-- ================================================================ -->
+<div id="s10"></div>
+<span class="stag stag-s">SHARED — SCREEN 10</span>
+<h2>PDF Download Popup</h2>
+<p class="vd">Pre-populated from merchant settings. Toggleable per download.</p>
+
+<div class="mo">
+  <div class="md">
+    <div class="mdt">Download Quote PDF</div>
+    <div class="mdd">QUO-00148 &mdash; Acme Industrial &mdash; $4,644.00</div>
+    <div style="font-weight:500;font-size:0.82rem;color:#1a1a1a;margin-bottom:0.4rem;">Pricing</div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show MSRP (Compare At Price)</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show Your Price</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show quantity</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show line totals</span></div>
+    <div class="cr"><div class="cb uc"></div><span class="cl">Show savings (MSRP vs Your Price)</span></div>
+    <div style="font-weight:500;font-size:0.82rem;color:#1a1a1a;margin-top:0.85rem;margin-bottom:0.4rem;">Summary</div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show subtotal</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show tax</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Show grand total</span></div>
+    <div style="font-weight:500;font-size:0.82rem;color:#1a1a1a;margin-top:0.85rem;margin-bottom:0.4rem;">Additional</div>
+    <div class="cr"><div class="cb"></div><span class="cl">Include notes</span></div>
+    <div class="cr"><div class="cb"></div><span class="cl">Include expiry date</span></div>
+    <div class="cr"><div class="cb uc"></div><span class="cl">Include SKU column</span></div>
+    <div class="mda"><button class="btn btn-s">Cancel</button><button class="btn btn-p">Download PDF</button></div>
+  </div>
+</div>
+
+</body>
+</html>
